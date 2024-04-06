@@ -1,0 +1,84 @@
+//html and Javascript code
+1. Setting up the Server (using Express.js and Socket.IO):
+const express = require('express');
+const http = require('http');
+const socketIO = require('socket.io');
+
+const app = express();
+const server = http.createServer(app);
+const io = socketIO(server);
+
+// Serve static files from the 'public' directory
+app.use(express.static('public'));
+
+// Socket.IO logic for real-time communication
+io.on('connection', socket => {
+    console.log('New user connected: ' + socket.id);
+
+    socket.on('disconnect', () => {
+        console.log('User disconnected: ' + socket.id);
+    });
+
+    // Handle text updates from clients
+    socket.on('textUpdate', data => {
+        // Broadcast the text update to all connected clients except the sender
+        socket.broadcast.emit('textUpdate', data);
+    });
+
+    // Handle cursor position updates from clients
+    socket.on('cursorPosition', data => {
+        // Broadcast the cursor position to all connected clients except the sender
+        socket.broadcast.emit('cursorPosition', data);
+    });
+
+    // Handle text highlighting updates from clients
+    socket.on('highlight', data => {
+        // Broadcast the highlight data to all connected clients except the sender
+        socket.broadcast.emit('highlight', data);
+    });
+});
+
+// Start the server
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
+//2. Client-side JavaScript (using Socket.IO):
+<!-- Include Socket.IO library -->
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    // Connect to the server
+    const socket = io();
+
+    // Handle text updates
+    const handleTextUpdate = data => {
+        // Update the text editor with the received data
+    };
+
+    // Handle cursor position updates
+    const handleCursorPosition = data => {
+        // Update cursor position in the text editor
+    };
+
+    // Handle text highlighting updates
+    const handleHighlight = data => {
+        // Apply text highlighting in the text editor
+    };
+
+    // Event listeners for text updates, cursor positions, and highlights
+    socket.on('textUpdate', handleTextUpdate);
+    socket.on('cursorPosition', handleCursorPosition);
+    socket.on('highlight', handleHighlight);
+
+    // Example: Send text update to server
+    const newText = 'This is the updated text.';
+    socket.emit('textUpdate', newText);
+
+    // Example: Send cursor position to server
+    const cursorPosition = { x: 100, y: 50 };
+    socket.emit('cursorPosition', cursorPosition);
+
+    // Example: Send highlight data to server
+    const highlightData = { start: 10, end: 20, color: 'yellow' };
+    socket.emit('highlight', highlightData);
+</script>
